@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ resource.title }} — Duncan Diesel{% endblock %}
+{% block content %}
+<span class="eyebrow">
+  {% if resource.resource_type == 'video' %}🎬 video
+  {% elif resource.resource_type == 'photo' %}📷 photo
+  {% elif resource.resource_type == 'text' %}📝 write-up
+  {% elif resource.resource_type == 'url' %}🔗 link
+  {% elif resource.resource_type == 'file' %}📄 file
+  {% endif %}
+  {% if resource.category %} · {{ resource.category.name }}{% endif %}
+  {% if resource.status != 'approved' %} · ⚠️ {{ resource.status }}{% endif %}
+</span>
+<h1>{{ resource.title }}</h1>
+
+{% if resource.description %}<p>{{ resource.description }}</p>{% endif %}
+
+{% if resource.engine_models or resource.vehicle_models or resource.tags %}
+  <div class="tag-list">
+    {% for e in resource.engine_models %}<span class="tag-pill">{{ e.code }}</span>{% endfor %}
+    {% for v in resource.vehicle_models %}<span class="tag-pill tag-pill-alt">{{ v.code }}</span>{% endfor %}
+    {% for t in resource.tags %}<span class="tag-pill tag-pill-type">{{ t.name }}</span>{% endfor %}
+  </div>
+{% endif %}
+
+<div class="panel">
+  {% if resource.resource_type in ('video', 'url') %}
+    <p><a href="{{ resource.url }}" target="_blank" rel="noopener">🔗 {{ resource.url }}</a></p>
+  {% elif resource.resource_type == 'photo' %}
+    {% if resource.file_path %}
+      <img src="{{ url_for('kb.uploaded_file', filename=resource.file_path) }}" alt="{{ resource.title }}" style="max-width: 100%; border-radius: 4px;">
+    {% else %}
+      <p><a href="{{ resource.url }}" target="_blank" rel="noopener">🔗 {{ resource.url }}</a></p>
+    {% endif %}
+  {% elif resource.resource_type == 'file' %}
+    <p><a class="btn btn-primary" href="{{ url_for('kb.uploaded_file', filename=resource.file_path) }}">⬇️ Download</a></p>
+  {% elif resource.resource_type == 'text' %}
+    <div class="text-body">{{ resource.body }}</div>
+  {% endif %}
+</div>
+
+{% if resource.submitted_by_name %}
+  <p class="form-footer">Submitted by {{ resource.submitted_by_name }}</p>
+{% endif %}
+
+<form method="post" action="{{ url_for('kb.report_broken_link', resource_id=resource.id) }}" class="report-broken-link">
+  <input type="text" name="note" placeholder="Optional note (e.g. what's wrong)" maxlength="500">
+  <button class="btn btn-secondary" type="submit">⚠️ Report broken link</button>
+</form>
+
+<p class="form-footer">
+  <a href="{{ url_for('kb.library') }}">← Back to browse</a>
+  {% if current_user.is_authenticated and current_user.is_admin %}
+    · <a href="{{ url_for('kb.admin_resource', resource_id=resource.id) }}">✏️ Edit / delete (admin)</a>
+  {% endif %}
+</p>
+
+<div id="recently-viewed" hidden class="recently-viewed-library"></div>
+
+{# Pass resource metadata to the JS without inline scripts or proxy-breaking hardcoded URLs #}
+<span id="resource-page-data" hidden
+  data-resource-id="{{ resource.id }}"
+  data-resource-title="{{ resource.title | e }}"
+  data-resource-url="{{ url_for('kb.resource_detail', resource_id=resource.id) }}"></span>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/recently-viewed.js') }}"></script>
+{% endblock %}

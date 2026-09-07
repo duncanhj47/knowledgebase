@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Blog — Duncan Diesel{% endblock %}
+{% block content %}
+<div class="actions" style="justify-content: space-between; align-items: center;">
+  <h1 style="margin: 0;">Blog</h1>
+  {% if current_user.is_authenticated and current_user.is_admin %}
+    <a class="btn btn-primary" href="{{ url_for('articles.admin_new_article') }}">✏️ New Article</a>
+  {% endif %}
+</div>
+
+{% if pagination.items %}
+  <div class="resource-list">
+    {% for article in pagination.items %}
+      <a class="resource-row" href="{{ url_for('articles.article_detail', article_id=article.id) }}">
+        <span class="resource-row-title">{{ article.title }}</span>
+        <span class="resource-row-meta">{{ article.created_at.strftime('%d %b %Y') }}</span>
+      </a>
+    {% endfor %}
+  </div>
+
+  {% if pagination.pages > 1 %}
+    <div class="actions" style="justify-content: center; margin-top: 1.5rem;">
+      {% if pagination.has_prev %}
+        <a class="btn btn-secondary" href="{{ url_for('articles.list_articles', page=pagination.prev_num) }}">← Newer</a>
+      {% endif %}
+      <span class="form-footer" style="margin: 0.6em 0.5em 0 0.5em;">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+      {% if pagination.has_next %}
+        <a class="btn btn-secondary" href="{{ url_for('articles.list_articles', page=pagination.next_num) }}">Older →</a>
+      {% endif %}
+    </div>
+  {% endif %}
+{% else %}
+  <div class="panel">
+    <p>No articles yet.</p>
+  </div>
+{% endif %}
+{% endblock %}

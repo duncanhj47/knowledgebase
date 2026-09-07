@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Review queue — Duncan Diesel{% endblock %}
+{% block content %}
+<span class="eyebrow">🗂️ moderation</span>
+<h1>Review queue</h1>
+
+{% if pending %}
+  <div class="resource-grid">
+    {% for r in pending %}
+      <a class="panel resource-card" href="{{ url_for('kb.admin_resource', resource_id=r.id) }}">
+        <span class="eyebrow">
+          {% if r.resource_type == 'video' %}🎬 video
+          {% elif r.resource_type == 'photo' %}📷 photo
+          {% elif r.resource_type == 'text' %}📝 write-up
+          {% elif r.resource_type == 'url' %}🔗 link
+          {% elif r.resource_type == 'file' %}📄 file
+          {% endif %}
+        </span>
+        <h2>{{ r.title }}</h2>
+        {% if r.submitted_by_name %}<p>from {{ r.submitted_by_name }}</p>{% endif %}
+        <p class="form-footer">{{ r.created_at.strftime('%d %b %Y') }}</p>
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="panel">
+    <p>✅ Nothing waiting for review.</p>
+  </div>
+{% endif %}
+{% endblock %}

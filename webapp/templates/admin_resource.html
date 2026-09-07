@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Review — {{ resource.title }}{% endblock %}
+{% block content %}
+<span class="eyebrow">🗂️ reviewing · status: {{ resource.status }}</span>
+<h1>{{ resource.title }}</h1>
+
+<div class="panel">
+  <span class="eyebrow">edit metadata</span>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+
+    <div class="field">
+      {{ form.title.label }}
+      {{ form.title() }}
+      {% for e in form.title.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+    </div>
+
+    <div class="field">
+      {{ form.description.label }}
+      {{ form.description(rows="3") }}
+    </div>
+
+    {% if resource.resource_type in ('video', 'url') %}
+      <div class="field">
+        <label>URL</label>
+        {{ form.url(placeholder="https://…") }}
+        {% for e in form.url.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+      </div>
+    {% elif resource.resource_type == 'photo' and not resource.file_path %}
+      <div class="field">
+        <label>Photo URL</label>
+        {{ form.url(placeholder="https://…") }}
+        {% for e in form.url.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+      </div>
+    {% elif resource.resource_type == 'text' %}
+      <div class="field">
+        <label>Write-up / text body</label>
+        {{ form.body(rows="8") }}
+      </div>
+    {% elif resource.resource_type == 'file' %}
+      <p class="form-footer">📎 Uploaded file: <a href="{{ url_for('kb.uploaded_file', filename=resource.file_path) }}" target="_blank">{{ resource.file_path }}</a> — file replacement not supported here.</p>
+    {% elif resource.resource_type == 'photo' and resource.file_path %}
+      <div style="margin-bottom: 1rem;">
+        <span class="eyebrow">current photo</span>
+        <img src="{{ url_for('kb.uploaded_file', filename=resource.file_path) }}" alt="{{ resource.title }}" style="max-width: 100%; border-radius: 4px; margin-top: 0.5rem; display: block;">
+      </div>
+      <p class="form-footer">Photo replacement not supported here.</p>
+    {% endif %}
+
+    {% if resource.submitted_by_name or resource.submitted_by_contact %}
+      <p class="form-footer">
+        {% if resource.submitted_by_name %}From {{ resource.submitted_by_name }}.{% endif %}
+        {% if resource.submitted_by_contact %}Contact: {{ resource.submitted_by_contact }}{% endif %}
+      </p>
+    {% endif %}
+
+    <div class="field">
+      {{ form.category.label }}
+      {{ form.category() }}
+    </div>
+
+    <div class="field">
+      {{ form.engine_models.label }} <span class="field-hint">(ctrl/cmd-click for multiple)</span>
+      {{ form.engine_models(size="6", class="multiselect") }}
+    </div>
+
+    <div class="field">
+      {{ form.vehicle_models.label }} <span class="field-hint">(ctrl/cmd-click for multiple)</span>
+      {{ form.vehicle_models(size="6", class="multiselect") }}
+    </div>
+
+    <div class="field">
+      {{ form.tags.label }}
+      <div class="tag-input-wrap">
+        {{ form.tags(id="tags-input", placeholder="e.g. Wiring Diagram, FAQ", autocomplete="off") }}
+        <div class="search-suggestions" id="tags-suggestions" hidden></div>
+      </div>
+      {% for e in form.tags.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+    </div>
+    <script type="application/json" id="existing-tags-data">{{ all_tags | map(attribute='name') | list | tojson }}</script>
+
+    <div class="field">
+      {{ form.admin_notes.label }}
+      {{ form.admin_notes(rows="2") }}
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" type="submit" name="action" value="approve">✅ Approve</button>
+      <button class="btn btn-secondary" type="submit" name="action" value="save">💾 Save changes</button>
+      <button class="btn btn-secondary" type="submit" name="action" value="reject">🚫 Reject</button>
+    </div>
+  </form>
+
+  <form method="post" action="{{ url_for('kb.admin_delete_resource', resource_id=resource.id) }}"
+        onsubmit="return confirm('Permanently delete \'{{ resource.title }}\'? This can\'t be undone.');"
+        style="margin-top: 0.75rem;">
+    <button class="btn btn-secondary" type="submit" style="border-color: var(--error); color: var(--error);">🗑️ Delete permanently</button>
+</div>
+
+<p class="form-footer"><a href="{{ url_for('kb.admin_queue') }}">← Back to queue</a></p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/tag-autocomplete.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "_macros.html" import tag_pills %}
+{% block title %}Duncan Diesel{% endblock %}
+{% block content %}
+<div class="hero">
+  <div class="actions">
+    <a class="btn btn-primary" href="{{ url_for('kb.library') }}">📚 Browse the archive</a>
+    <a class="btn btn-secondary" href="{{ url_for('kb.submit') }}">📤 Submit something</a>
+  </div>
+</div>
+
+<div class="panel featured-engine">
+  <img src="{{ url_for('static', filename='img/2h-engine.jpg') }}" alt="Toyota 2H diesel engine" class="featured-engine-img">
+  <div class="featured-engine-body">
+    <span class="eyebrow">🔧 featured engine</span>
+    <h2>The 2H</h2>
+    <p>Toyota&rsquo;s legendary 4.0L inline-six diesel, fitted across the 40, 60 and 70 Series LandCruisers, as well as Dyna trucks, Coaster buses, and even some Toyota forklifts. An engine from an era when diesels were built to work: simple, understressed, mechanically injected and extraordinarily durable. No timing belt, no timing chain, no ECU, no common rail, no DPF, no DEF, and no EGR. Just gears, iron and diesel. An engine that earned its reputation the hard way. It&rsquo;s also the engine this whole archive really started around.</p>
+  </div>
+</div>
+
+{% if recent %}
+  <h2>Recently added</h2>
+  <div class="resource-list">
+    {% for item in recent %}
+      <a class="resource-row" href="{{ item.url }}">
+        <span class="resource-row-title">{{ item.title }}{% if item.is_article %} <span class="resource-row-meta" style="font-weight:400;">(Blog Post)</span>{% endif %}</span>
+        {{ tag_pills(item) }}
+        <span class="resource-row-meta">{{ item.created_at.strftime('%d %b') }}</span>
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

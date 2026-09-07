@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Preferred Suppliers — Duncan Diesel{% endblock %}
+{% block content %}
+<div class="actions" style="justify-content: space-between; align-items: center;">
+  <h1 style="margin: 0;">Preferred Suppliers</h1>
+  {% if current_user.is_authenticated and current_user.is_admin %}
+    <a class="btn btn-primary" href="{{ url_for('suppliers.admin_new_supplier') }}">➕ New Supplier</a>
+  {% endif %}
+</div>
+<p class="form-footer">Businesses worth knowing about for 2H/12HT and Landcruiser diesel parts and work.</p>
+
+{% if pagination.items %}
+  <div class="resource-grid">
+    {% for s in pagination.items %}
+      <a class="panel resource-card" href="{{ url_for('suppliers.supplier_detail', supplier_id=s.id) }}">
+        {% if s.image_filename %}
+          <img src="{{ url_for('suppliers.supplier_image', filename=s.image_filename) }}" alt="{{ s.name }}" style="width: 100%; height: 140px; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--line); margin-bottom: 0.6rem;">
+        {% endif %}
+        <h3>{{ s.name }}</h3>
+      </a>
+    {% endfor %}
+  </div>
+
+  {% if pagination.pages > 1 %}
+    <div class="actions" style="justify-content: center; margin-top: 1.5rem;">
+      {% if pagination.has_prev %}
+        <a class="btn btn-secondary" href="{{ url_for('suppliers.list_suppliers', page=pagination.prev_num) }}">← Newer</a>
+      {% endif %}
+      <span class="form-footer" style="margin: 0.6em 0.5em 0 0.5em;">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+      {% if pagination.has_next %}
+        <a class="btn btn-secondary" href="{{ url_for('suppliers.list_suppliers', page=pagination.next_num) }}">Older →</a>
+      {% endif %}
+    </div>
+  {% endif %}
+{% else %}
+  <div class="panel">
+    <p>No suppliers listed yet.</p>
+  </div>
+{% endif %}
+{% endblock %}

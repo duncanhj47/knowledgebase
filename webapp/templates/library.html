@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% from "_macros.html" import tag_pills %}
+{% block title %}Browse — Duncan Diesel{% endblock %}
+{% block content %}
+<h1>Browse</h1>
+
+<form method="get" class="filter-panel">
+  <div class="search-bar">
+    <div class="search-input-wrap" data-suggest-url="{{ url_for('kb.library_suggest') }}" data-library-base="{{ url_for('kb.library') }}">
+      <input type="text" name="q" id="search-input" value="{{ query }}" placeholder="Search titles, notes, tags…" autocomplete="off">
+      <div class="search-suggestions" id="search-suggestions" hidden></div>
+    </div>
+    <button class="btn btn-primary" type="submit">🔍 Apply</button>
+  </div>
+
+  <div class="filter-row">
+    {% if engine_models %}
+      <div class="tag-filter" data-facet="engine">
+        <button type="button" class="tag-filter-trigger" aria-expanded="false" aria-haspopup="true">
+          🔧 Engine <span class="tag-filter-count" hidden></span>
+        </button>
+        <div class="tag-filter-pills"></div>
+        <div class="tag-filter-panel" hidden>
+          <input type="text" class="tag-filter-search" placeholder="Search engines…" aria-label="Search engine models">
+          <div class="tag-filter-options">
+            {% for e in engine_models %}
+              <label class="tag-filter-option">
+                <input type="checkbox" name="engine" value="{{ e.id }}" {% if e.id in selected_engines %}checked{% endif %}>
+                <span>{{ e.code }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if vehicle_models %}
+      <div class="tag-filter" data-facet="vehicle">
+        <button type="button" class="tag-filter-trigger" aria-expanded="false" aria-haspopup="true">
+          🚙 Vehicle <span class="tag-filter-count" hidden></span>
+        </button>
+        <div class="tag-filter-pills"></div>
+        <div class="tag-filter-panel" hidden>
+          <input type="text" class="tag-filter-search" placeholder="Search vehicles…" aria-label="Search vehicle models">
+          <div class="tag-filter-options">
+            {% for v in vehicle_models %}
+              <label class="tag-filter-option">
+                <input type="checkbox" name="vehicle" value="{{ v.id }}" {% if v.id in selected_vehicles %}checked{% endif %}>
+                <span>{{ v.code }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if all_tags %}
+      <div class="tag-filter" data-facet="type">
+        <button type="button" class="tag-filter-trigger" aria-expanded="false" aria-haspopup="true">
+          🏷️ Type <span class="tag-filter-count" hidden></span>
+        </button>
+        <div class="tag-filter-pills"></div>
+        <div class="tag-filter-panel" hidden>
+          <input type="text" class="tag-filter-search" placeholder="Search types…" aria-label="Search resource types">
+          <div class="tag-filter-options">
+            {% for t in all_tags %}
+              <label class="tag-filter-option">
+                <input type="checkbox" name="type" value="{{ t.id }}" {% if t.id in selected_tags %}checked{% endif %}>
+                <span>{{ t.name }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if problems %}
+    <div class="problem-picker-row">
+      <span class="eyebrow" style="flex-shrink:0;">⚠️ What's the problem?</span>
+      <div class="tag-filter" id="problem-filter">
+        <button type="button" class="tag-filter-trigger problem-trigger" aria-expanded="false" aria-haspopup="true">
+          — select a problem —
+        </button>
+        <div class="tag-filter-panel" hidden>
+          <input type="text" class="tag-filter-search" placeholder="Search problems…" aria-label="Search problems">
+          <div class="tag-filter-options">
+            {% for p in problems %}
+              <div class="tag-filter-option problem-option"
+                   data-url="{{ request.script_root }}/problems/{{ p.id }}/go">
+                <span>{{ p.name }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</form>
+
+{% if query or selected_engines or selected_vehicles %}
+  <p class="form-footer">{{ total }} result{{ '' if total == 1 else 's' }} — <a href="{{ url_for('kb.library') }}">clear filters</a></p>
+{% elif show_all %}
+  <p class="form-footer">{{ total }} result{{ '' if total == 1 else 's' }} — showing everything</p>
+{% endif %}
+
+{% if groups %}
+  {% for label, items in groups %}
+    <h2>{{ label }}</h2>
+    <div class="resource-list">
+      {% for r in items %}
+        <a class="resource-row" href="{{ url_for('kb.resource_detail', resource_id=r.id) }}">
+          <span class="resource-row-title">{{ r.title }}</span>
+          {{ tag_pills(r) }}
+          {% if r.category %}<span class="resource-row-meta">{{ r.category.name }}</span>{% endif %}
+        </a>
+      {% endfor %}
+    </div>
+  {% endfor %}
+{% else %}
+  <div class="panel">
+    <p>
+      {% if query or selected_engines or selected_vehicles %}
+        Nothing matched those filters.
+      {% else %}
+        Search or filter above to browse the archive.
+      {% endif %}
+      <a href="{{ url_for('kb.submit') }}">Submit something</a> to help grow it.
+    </p>
+    {% if not query and not selected_engines and not selected_vehicles %}
+      <p><a class="btn btn-secondary" href="{{ url_for('kb.library', all=1) }}">📖 See all resources</a></p>
+    {% endif %}
+  </div>
+{% endif %}
+
+<div id="recently-viewed" hidden class="recently-viewed-library"></div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/filters.js') }}"></script>
+<script src="{{ url_for('static', filename='js/search-suggest.js') }}"></script>
+<script src="{{ url_for('static', filename='js/recently-viewed.js') }}"></script>
+<script>
+(function () {
+  // Problem picker — navigate on click, update trigger label, then close.
+  // The panel open/close/search is handled by filters.js (initTagFilter),
+  // but problem options are navigation links not checkboxes, so we wire
+  // that part here separately.
+  document.querySelectorAll('.problem-option').forEach(function (opt) {
+    opt.style.cursor = 'pointer';
+    opt.addEventListener('click', function () {
+      var url = opt.dataset.url;
+      if (url) window.location.href = url;
+    });
+  });
+})();
+</script>
+{% endblock %}

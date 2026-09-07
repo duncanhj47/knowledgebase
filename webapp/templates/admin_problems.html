@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Problems — Duncan Diesel{% endblock %}
+{% block content %}
+<div class="actions" style="justify-content: space-between; align-items: center;">
+  <h1 style="margin: 0;">⚠️ Problems</h1>
+  <a class="btn btn-primary" href="{{ url_for('problems.admin_new_problem') }}">➕ New Problem</a>
+</div>
+<p class="form-footer">Each problem appears as an option in the "What's the problem?" dropdown on the Browse page and links directly to its associated resource.</p>
+
+{% if problems %}
+  <div class="resource-list">
+    {% for p in problems %}
+      <div class="resource-row" style="cursor: default;">
+        <span class="resource-row-title">{{ p.name }}</span>
+        <span class="resource-row-meta" style="min-width: 0; flex: 1; text-align: left; padding-left: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-muted); font-size: 0.8rem;">→ {{ p.resource.title }}</span>
+        <span class="resource-row-meta">{{ p.sort_order }}</span>
+        <a href="{{ url_for('problems.admin_edit_problem', problem_id=p.id) }}" class="btn btn-secondary" style="padding: 0.3em 0.75em; font-size: 0.8rem; margin-left: 0.5rem;">✏️ Edit</a>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="panel">
+    <p>No problems defined yet. Add one to make the "What's the problem?" picker appear on the Browse page.</p>
+  </div>
+{% endif %}
+{% endblock %}

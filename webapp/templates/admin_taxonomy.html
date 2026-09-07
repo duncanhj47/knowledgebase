@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Manage tags — Duncan Diesel{% endblock %}
+{% block content %}
+<span class="eyebrow">🏷️ taxonomy</span>
+<h1>Engine &amp; vehicle models</h1>
+
+<div class="panel">
+  <span class="eyebrow">engine models</span>
+  <form method="post" action="{{ url_for('kb.admin_add_engine') }}" class="inline-form">
+    {{ engine_form.hidden_tag() }}
+    {{ engine_form.code(id="engine-code", placeholder="e.g. 2H", **{"aria-label": "Engine code"}) }}
+    {{ engine_form.family(id="engine-family", placeholder="e.g. H series (optional)", **{"aria-label": "Engine family"}) }}
+    <button class="btn btn-primary" type="submit">➕ Add</button>
+  </form>
+  {% for e in engine_form.code.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+
+  {% if engines %}
+    <ul class="tag-manage-list">
+      {% for e in engines %}
+        <li>
+          <span class="tag-pill">{{ e.code }}</span>
+          {% if e.family %}<span class="field-hint">{{ e.family }}</span>{% endif %}
+          <span class="field-hint">{{ e.resources|length }} resource{{ '' if e.resources|length == 1 else 's' }}</span>
+          <form method="post" action="{{ url_for('kb.admin_delete_engine', engine_id=e.id) }}" class="delete-form">
+            <button class="btn-inline-delete" type="submit" onclick="return confirm('Remove {{ e.code }}? This untags it from any resources.');" aria-label="Delete {{ e.code }}">🗑️</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="form-footer">No engine models yet.</p>
+  {% endif %}
+</div>
+
+<div class="panel">
+  <span class="eyebrow">vehicle models</span>
+  <form method="post" action="{{ url_for('kb.admin_add_vehicle') }}" class="inline-form">
+    {{ vehicle_form.hidden_tag() }}
+    {{ vehicle_form.code(id="vehicle-code", placeholder="e.g. HJ60", **{"aria-label": "Vehicle code"}) }}
+    {{ vehicle_form.family(id="vehicle-family", placeholder="e.g. 60 Series (optional)", **{"aria-label": "Vehicle chassis family"}) }}
+    <button class="btn btn-primary" type="submit">➕ Add</button>
+  </form>
+  {% for e in vehicle_form.code.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+
+  {% if vehicles %}
+    <ul class="tag-manage-list">
+      {% for v in vehicles %}
+        <li>
+          <span class="tag-pill tag-pill-alt">{{ v.code }}</span>
+          {% if v.chassis_family %}<span class="field-hint">{{ v.chassis_family }}</span>{% endif %}
+          <span class="field-hint">{{ v.resources|length }} resource{{ '' if v.resources|length == 1 else 's' }}</span>
+          <form method="post" action="{{ url_for('kb.admin_delete_vehicle', vehicle_id=v.id) }}" class="delete-form">
+            <button class="btn-inline-delete" type="submit" onclick="return confirm('Remove {{ v.code }}? This untags it from any resources.');" aria-label="Delete {{ v.code }}">🗑️</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="form-footer">No vehicle models yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

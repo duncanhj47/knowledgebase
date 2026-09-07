@@ -1,0 +1,15 @@
+{% macro tag_pills(resource, limit=4) %}
+  {% set engines = resource.engine_models %}
+  {% set vehicles = resource.vehicle_models %}
+  {% set types = resource.tags %}
+  {% set total = engines|length + vehicles|length + types|length %}
+  {% if total %}
+    <span class="tag-list tag-list-inline">
+      {% set shown = [] %}
+      {% for e in engines %}{% if shown|length < limit %}<span class="tag-pill">{{ e.code }}</span>{% set _ = shown.append(1) %}{% endif %}{% endfor %}
+      {% for v in vehicles %}{% if shown|length < limit %}<span class="tag-pill tag-pill-alt">{{ v.code }}</span>{% set _ = shown.append(1) %}{% endif %}{% endfor %}
+      {% for t in types %}{% if shown|length < limit %}<span class="tag-pill tag-pill-type">{{ t.name }}</span>{% set _ = shown.append(1) %}{% endif %}{% endfor %}
+      {% if total > limit %}<span class="tag-pill tag-pill-more" title="{{ total - limit }} more tag{{ '' if total - limit == 1 else 's' }}">+{{ total - limit }}</span>{% endif %}
+    </span>
+  {% endif %}
+{% endmacro %}

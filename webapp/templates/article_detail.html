@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title }} — Duncan Diesel{% endblock %}
+{% block content %}
+<h1>{{ article.title }}</h1>
+<p class="form-footer">
+  {{ article.created_at.strftime('%d %b %Y') }}
+  {% if article.updated_at and article.updated_at != article.created_at %}
+    · updated {{ article.updated_at.strftime('%d %b %Y') }}
+  {% endif %}
+  {% if article.author %} · {{ article.author.username }}{% endif %}
+</p>
+
+<div class="article-body">{{ rendered_body | safe }}</div>
+
+{% if current_user.is_authenticated and current_user.is_admin %}
+  <p class="form-footer" style="margin-top: 1.5rem;">
+    <a href="{{ url_for('articles.admin_edit_article', article_id=article.id) }}">✏️ Edit</a>
+  </p>
+{% endif %}
+
+<p class="form-footer"><a href="{{ url_for('articles.list_articles') }}">← Back to articles</a></p>
+{% endblock %}

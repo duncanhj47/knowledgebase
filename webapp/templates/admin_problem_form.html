@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{% if problem %}Edit Problem{% else %}New Problem{% endif %} — Duncan Diesel{% endblock %}
+{% block content %}
+<span class="eyebrow">{% if problem %}✏️ editing{% else %}⚠️ new problem{% endif %}</span>
+<h1>{% if problem %}Edit Problem{% else %}New Problem{% endif %}</h1>
+
+<div class="panel" style="max-width: 560px;">
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+
+    <div class="field">
+      {{ form.name.label }}
+      {{ form.name(placeholder="e.g. Starts then dies when cold") }}
+      {% for e in form.name.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+    </div>
+
+    <div class="field">
+      {{ form.resource_id.label }}
+      {{ form.resource_id(class="multiselect", size=1) }}
+      {% for e in form.resource_id.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+    </div>
+
+    <div class="field">
+      {{ form.sort_order.label }}
+      {{ form.sort_order(placeholder="0") }}
+      <span class="field-hint">Problems are shown in ascending order — 0 first, 99 last.</span>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" type="submit">💾 {% if problem %}Save changes{% else %}Add problem{% endif %}</button>
+      <a class="btn btn-secondary" href="{{ url_for('problems.admin_problems') }}">Cancel</a>
+    </div>
+  </form>
+
+  {% if problem %}
+    <form method="post" action="{{ url_for('problems.admin_delete_problem', problem_id=problem.id) }}"
+          onsubmit="return confirm('Delete \'{{ problem.name }}\'?');"
+          style="margin-top: 0.75rem;">
+      <button class="btn btn-secondary" type="submit" style="border-color: var(--error); color: var(--error);">🗑️ Delete</button>
+    </form>
+  {% endif %}
+</div>
+
+<p class="form-footer"><a href="{{ url_for('problems.admin_problems') }}">← Back to problems</a></p>
+{% endblock %}

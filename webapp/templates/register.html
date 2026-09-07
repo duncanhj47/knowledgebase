@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Register — Duncan Diesel{% endblock %}
+{% block content %}
+<div class="panel" style="max-width: 420px; margin-left: auto; margin-right: auto;">
+  <span class="eyebrow">📝 new account</span>
+  <h2>Create your account</h2>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+
+    <div class="field">
+      {{ form.username.label }}
+      {{ form.username(placeholder="yourname") }}
+      {% for e in form.username.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+    </div>
+
+    <div class="field">
+      {{ form.password.label }}
+      {{ form.password() }}
+      {% for e in form.password.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+    </div>
+
+    <div class="field">
+      {{ form.password2.label }}
+      {{ form.password2() }}
+      {% for e in form.password2.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+    </div>
+
+    <button class="btn btn-primary" type="submit">✅ Create account</button>
+  </form>
+  <p class="form-footer">Already have one? <a href="{{ url_for('auth.login') }}">🔑 Log in</a></p>
+</div>
+{% endblock %}

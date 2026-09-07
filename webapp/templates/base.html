@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Duncan Diesel{% endblock %}</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@500&family=Inter:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <nav class="nav">
+    <a class="brand" href="{{ url_for('main.index') }}">
+      <span class="brand-name">DUNCAN</span> <span class="brand-badge"><span class="brand-badge-text">DIESEL</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="{{ url_for('kb.library') }}">📚 Browse</a>
+      <a href="{{ url_for('kb.submit') }}">📤 Submit</a>
+      <a href="{{ url_for('articles.list_articles') }}">📰 Blog</a>
+      <a href="{{ url_for('suppliers.list_suppliers') }}">🤝 Suppliers</a>
+      {% if current_user.is_authenticated %}
+        {% if current_user.is_admin %}
+          <a href="{{ url_for('kb.admin_queue') }}">🗂️ Queue</a>
+          <a href="{{ url_for('kb.admin_taxonomy') }}">🏷️ Tags</a>
+          <a href="{{ url_for('problems.admin_problems') }}">⚠️ Problems</a>
+        {% endif %}
+        <span class="nav-user">👋 {{ current_user.username }}</span>
+      {% endif %}
+    </div>
+  </nav>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flashes">
+        {% for category, message in messages %}
+          <li class="flash flash-{{ category }}">
+            {% if category == 'success' %}✅{% elif category == 'error' %}⚠️{% endif %}
+            {{ message }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <div class="shell">
+    {% block content %}{% endblock %}
+  </div>
+
+  <footer class="site-footer">
+    <a href="https://www.facebook.com/groups/2h12ht" target="_blank" rel="noopener"><i class="fa-brands fa-facebook"></i> Facebook</a>
+    <a href="https://www.youtube.com/@DuncanMargetts" target="_blank" rel="noopener"><i class="fa-brands fa-youtube"></i> YouTube</a>
+    <a href="https://forum.ih8mud.com/members/duncanrm.74271/" target="_blank" rel="noopener">🚙 IH8MUD</a>
+    <a href="https://ko-fi.com/duncanmargetts" target="_blank" rel="noopener">🍺 Buy me a beer</a>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

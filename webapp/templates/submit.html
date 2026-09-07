@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Submit — Duncan Diesel{% endblock %}
+{% block content %}
+<div class="panel" style="max-width: 560px; margin-left: auto; margin-right: auto;">
+  <span class="eyebrow">📤 new submission</span>
+  <h2>Submit something to the archive</h2>
+  <p>No account needed. Everything goes into a review queue before it's visible to anyone else.</p>
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {{ form.hidden_tag() }}
+
+    <div class="field">
+      {{ form.title.label }}
+      {{ form.title() }}
+      {% for e in form.title.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+    </div>
+
+    <div class="field">
+      {{ form.resource_type.label }}
+      <div class="radio-group">
+        {% for sub in form.resource_type %}
+          <label class="radio-option">{{ sub }} {{ sub.label.text }}</label>
+        {% endfor %}
+      </div>
+      {% for e in form.resource_type.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+    </div>
+
+    <div class="field">
+      {{ form.description.label }}
+      {{ form.description(rows="3") }}
+    </div>
+
+    <div class="field" data-shows-for="video,url,photo">
+      {{ form.url.label }} <span class="field-hint">(video/link, or a photo album link)</span>
+      {{ form.url() }}
+      {% for e in form.url.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+    </div>
+
+    <div class="field" data-shows-for="file,photo">
+      {{ form.file.label }} <span class="field-hint">(PDF, image, or doc)</span>
+      {{ form.file() }}
+      {% for e in form.file.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+    </div>
+
+    <div class="field" data-shows-for="text">
+      {{ form.body.label }}
+      {{ form.body(rows="6") }}
+      {% for e in form.body.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+    </div>
+
+    <div class="field">
+      {{ form.category.label }}
+      {{ form.category() }}
+    </div>
+
+    <div class="field">
+      {{ form.engine_models.label }} <span class="field-hint">(ctrl/cmd-click for multiple)</span>
+      {{ form.engine_models(size="6", class="multiselect") }}
+    </div>
+
+    <div class="field">
+      {{ form.vehicle_models.label }} <span class="field-hint">(ctrl/cmd-click for multiple)</span>
+      {{ form.vehicle_models(size="6", class="multiselect") }}
+    </div>
+
+    <div class="field">
+      {{ form.submitted_by_name.label }}
+      {{ form.submitted_by_name() }}
+    </div>
+
+    <div class="field">
+      {{ form.submitted_by_contact.label }}
+      {{ form.submitted_by_contact() }}
+    </div>
+
+    <button class="btn btn-primary" type="submit">📤 Submit for review</button>
+  </form>
+</div>
+
+<script>
+  (function () {
+    var radios = document.querySelectorAll('input[name="resource_type"]');
+    var conditional = document.querySelectorAll('[data-shows-for]');
+
+    function update() {
+      var selected = document.querySelector('input[name="resource_type"]:checked');
+      var type = selected ? selected.value : null;
+      conditional.forEach(function (field) {
+        var types = field.getAttribute('data-shows-for').split(',');
+        field.style.display = (type && types.indexOf(type) !== -1) ? '' : 'none';
+      });
+    }
+
+    radios.forEach(function (r) { r.addEventListener('change', update); });
+    update();
+  })();
+</script>
+{% endblock %}

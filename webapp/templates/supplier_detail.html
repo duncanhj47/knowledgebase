@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ supplier.name }} — Duncan Diesel{% endblock %}
+{% block content %}
+{% if supplier.image_filename %}
+  <img src="{{ url_for('suppliers.supplier_image', filename=supplier.image_filename) }}" alt="{{ supplier.name }}" style="max-width: 280px; width: 100%; border-radius: var(--radius); border: 1px solid var(--line); margin-bottom: 1rem;">
+{% endif %}
+
+<h1>{{ supplier.name }}</h1>
+
+<div class="article-body">{{ rendered_body | safe }}</div>
+
+<div class="actions" style="margin-top: 1.5rem;">
+  <a class="btn btn-primary" href="{{ url_for('suppliers.supplier_go', supplier_id=supplier.id) }}" target="_blank" rel="noopener sponsored">🔗 Visit {{ supplier.name }}</a>
+</div>
+
+{% if current_user.is_authenticated and current_user.is_admin %}
+  <p class="form-footer" style="margin-top: 1.5rem;">
+    <a href="{{ url_for('suppliers.admin_edit_supplier', supplier_id=supplier.id) }}">✏️ Edit</a>
+  </p>
+{% endif %}
+
+<p class="form-footer"><a href="{{ url_for('suppliers.list_suppliers') }}">← Back to suppliers</a></p>
+{% endblock %}

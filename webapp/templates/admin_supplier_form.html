@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}{% if supplier %}Edit Supplier{% else %}New Supplier{% endif %} — Duncan Diesel{% endblock %}
+
+{% block head %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet">
+<style>
+  .ql-editor { min-height: 180px; font-family: var(--font-body); font-size: 1rem; }
+  .ql-toolbar.ql-snow { border-color: var(--line); border-radius: var(--radius) var(--radius) 0 0; background: var(--surface); }
+  .ql-container.ql-snow { border-color: var(--line); border-radius: 0 0 var(--radius) var(--radius); background: var(--surface); }
+  .ql-snow .ql-stroke { stroke: var(--text-muted); }
+  .ql-snow .ql-picker { color: var(--text-muted); }
+</style>
+{% endblock %}
+
+{% block content %}
+<span class="eyebrow">{% if supplier %}✏️ editing{% else %}🤝 new supplier{% endif %}</span>
+<h1>{% if supplier %}Edit Supplier{% else %}New Supplier{% endif %}</h1>
+
+<form method="post" enctype="multipart/form-data" novalidate id="supplier-form">
+  {{ form.hidden_tag() }}
+
+  <div class="field">
+    {{ form.name.label }}
+    {{ form.name() }}
+    {% for e in form.name.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+  </div>
+
+  <div class="field">
+    {{ form.url.label }}
+    {{ form.url() }}
+    {% for e in form.url.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+  </div>
+
+  <div class="field">
+    {{ form.image.label }}
+    {% if supplier and supplier.image_filename %}
+      <div style="margin-bottom: 0.5rem;">
+        <img src="{{ url_for('suppliers.supplier_image', filename=supplier.image_filename) }}" alt="{{ supplier.name }}" style="max-width: 160px; border-radius: var(--radius); border: 1px solid var(--line); display: block;">
+        <span class="field-hint">Current image - choose a file below to replace it.</span>
+      </div>
+    {% endif %}
+    {{ form.image() }}
+    {% for e in form.image.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+  </div>
+
+  <div class="field">
+    <label>Description</label>
+    <div id="editor">{{ form.body_html.data | safe if form.body_html.data else '' }}</div>
+    {{ form.body_html(id="body_html", style="display:none;") }}
+    {% for e in form.body_html.errors %}<span class="field-error">⚠️ {{ e }}</span>{% endfor %}
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" type="submit">💾 {% if supplier %}Save changes{% else %}Add supplier{% endif %}</button>
+  </div>
+</form>
+
+{% if supplier %}
+  <form method="post" action="{{ url_for('suppliers.admin_delete_supplier', supplier_id=supplier.id) }}"
+        onsubmit="return confirm('Permanently delete \'{{ supplier.name }}\'? This can\'t be undone.');"
+        style="margin-top: 0.75rem;">
+    <button class="btn btn-secondary" type="submit" style="border-color: var(--error); color: var(--error);">🗑️ Delete permanently</button>
+  </form>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
+<script>
+  function imageHandler() {
+    var input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/png, image/jpeg, image/gif, image/webp');
+    input.click();
+
+    input.onchange = function () {
+      var file = input.files[0];
+      if (!file) return;
+
+      var formData = new FormData();
+      formData.append('image', file);
+      formData.append('csrf_token', document.querySelector('#supplier-form input[name="csrf_token"]').value);
+
+      fetch('{{ url_for("suppliers.admin_upload_supplier_image") }}', {
+        method: 'POST',
+        body: formData,
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data.url) {
+            var range = quill.getSelection(true) || { index: quill.getLength() };
+            quill.insertEmbed(range.index, 'image', data.url, 'user');
+            quill.setSelection(range.index + 1);
+          } else {
+            alert('Image upload failed: ' + (data.error || 'unknown error'));
+          }
+        })
+        .catch(function () {
+          alert('Image upload failed - check your connection and try again.');
+        });
+    };
+  }
+
+  var quill = new Quill('#editor', {
+    theme: 'snow',
+    modules: {
+      toolbar: {
+        container: [['bold', 'italic', 'underline'], ['link', 'image'], ['clean']],
+        handlers: { image: imageHandler }
+      }
+    }
+  });
+
+  document.getElementById('supplier-form').addEventListener('submit', function () {
+    document.getElementById('body_html').value = quill.root.innerHTML;
+  });
+</script>
+{% endblock %}
